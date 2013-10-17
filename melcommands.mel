@@ -54,8 +54,8 @@ global proc float prismVolume(string $triangle) {
 // pick a mesh and type meshVolume();
 global proc float meshVolume(string $name) {
 	//select -r $name;
-	string $sel[] = `ls -sl -dag -leaf -type "mesh"`;
-	string $dup[] = `duplicate -rr $sel[0]`;
+	//string $sel[] = `ls -sl -dag -leaf -type "mesh"`;
+	string $dup[] = `duplicate -rr $name`;
 	makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $dup[0]; //freeze
 	polyTriangulate $dup[0];
 	string $tris[] = `ls -flatten ($dup[0] +".f[*]")`;
