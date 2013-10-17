@@ -1,0 +1,85 @@
+// select -ado;
+// delete;
+// polyCylinder -r 0.5 -h 6 -sx 12 -sy 1 -sz 1 -ax 0 1 0 -rcp 0 -cuv 3 -ch 1 -n fuck1;
+// float $bbox[] = `exactWorldBoundingBox fuck1`;
+// for( $item in $bbox ) { 
+
+// 	print($item + "\n"); 
+
+// }
+// print("Bounding box ranges from: " 
+// 	+ $bbox[0] + "," + $bbox[1] + ","
+// 	 + $bbox[2] + ", to " + $bbox[3] + 
+// 	 "," + $bbox[4] + "," + $bbox[5] + ".\n");
+
+// cut object to two parts with desired percentage
+// return string[1] - desired part
+//		  string[0] - another part
+global proc string[] cut_percentage(float $percentage, float $vol_total, string $obj_name) {
+	float $bbox[] = `exactWorldBoundingBox $obj_name`;
+	float $min = $bbox[1];
+	float $max = $bbox[4];
+	float $threshold = 0.01;
+	int $flag = false;
+	string $res[2];
+	int $try_times = 77; 
+
+	// improve: binary search here
+	for ($i = 1; $i < $try_times; $i++) {
+		float $y = $min + ($max - $min) * $i / $try_times;
+		$dup = `duplicate $obj_name`;
+		select -r $dup[0];
+		polyCut -pcy $y -rx 90 -ef 1 -eo 0.3 0.3 0.3;
+		polyCloseBorder $dup[0];
+		string $parts[] = `polySeparate $dup[0]`;
+
+		if (size($parts) == 3) {
+			// parts != 2, discard this cut
+			for ($j = 0; $j < size($parts)-1; $j++) {
+			    float $vol = meshVolume($parts[$j]);
+			    float $perc = $vol / $vol_total;
+			    // print($perc + "\n");
+
+			    // this part has desired percentage
+			    if (abs($perc - $percentage) < $threshold) {
+			    	print("desired percentage found " + $perc + "\n");
+			    	$flag = true;
+			    	$res[1] = $parts[$j];
+			    	$res[0] = $parts[1-$j];
+			    	break;
+			    }
+			}
+		}	
+
+		if ($flag) {
+			delete $obj_name;
+			break;
+		} else {
+			delete $dup[0];
+		}
+	}
+
+	return $res;
+}
+
+select -ado;
+delete;
+string $obj[] = `polyPipe -r 1 -h 2 -t 0.5 -sa 20 -sh 1 -sc 0 -ax 0 1 0 -cuv 1 -rcp 0`;
+float $percentage_array[] = {0.1, 0.2, 0.3, 0.4};
+string $cut_res[];
+float $volume = meshVolume($obj[0]);
+$cut_res[0] = $obj[0];
+$percentage_array = sort($percentage_array);
+
+for ($i = size($percentage_array) - 1; $i>0; $i--) {
+	print("trying to cut: " + $percentage_array[$i] + "\n");
+	if (size($cut_res) == 0) {
+		print("cut failed\n");
+	} else {
+		$cut_res = cut_percentage($percentage_array[$i], $volume, $cut_res[0]);
+		print($cut_res);
+	}
+}
+
+// got problem for torus and pipe!
+// fill hole will fill all hole fuck!
