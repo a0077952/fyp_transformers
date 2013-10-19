@@ -83,3 +83,6 @@ for ($i = size($percentage_array) - 1; $i>0; $i--) {
 
 // got problem for torus and pipe!
 // fill hole will fill all hole fuck!
+
+
+print(meshVolume("fuck1"));
