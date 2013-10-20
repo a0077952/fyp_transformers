@@ -32,11 +32,10 @@ def form_cutting_planes_for_object(obj, num):
 
 
 
-def cut_object_with_planes_and_ratios(obj, planes, ratios):
+def cut_object_with_planes_and_ratios(obj, planes, ratios, threshold):
 	volume_total = mm.eval('meshVolume(\"' + obj + '\")')
 	ratio_found = []
 	for r in ratios: ratio_found.append(0)
-	threshold = 0.1
 	results = []
 	all_found = False
 	# initially we have only one object to cut
@@ -50,7 +49,7 @@ def cut_object_with_planes_and_ratios(obj, planes, ratios):
 		objs_for_next_iteration = []
 		# for each object in world
 		for i in range(len(objs_to_cut)):
-			print 'cut object: ' + objs_to_cut[i]
+			#print 'cut object: ' + objs_to_cut[i]
 			mc.select(objs_to_cut[i], r = True)
 			# cut
 			mc.polyCut(pc = plane['pc'], ro = plane['ro'], ef = True, eo = [0, 0, 0])
@@ -58,7 +57,12 @@ def cut_object_with_planes_and_ratios(obj, planes, ratios):
 			mc.select(objs_to_cut[i], r = True)
 			mc.polyCloseBorder()
 			# separate
-			print 'before separate ' + objs_to_cut[i]
+			# if number of pieces < 2, means the plane and the object did not intersect
+			if mc.polyEvaluate(shell = True) < 2:
+				# add back this object
+				objs_for_next_iteration.append(objs_to_cut[i])
+				# continue with other objs_to_cut
+				continue
 			parts = mc.polySeparate(objs_to_cut[i])
 			# add parts to future objs to cut
 			objs_for_next_iteration.extend(parts[0:-1])
@@ -91,9 +95,10 @@ def cut_object_with_planes_and_ratios(obj, planes, ratios):
 		objs_to_cut = objs_for_next_iteration
 		if all_found:
 			# todo move back all result obj
-			break
+			print 'FFFFFFFFFFFFFFFFFFFFFFFFUUUUUUUUUUUUUUUUUUUUUUUUUU'
+			return results
 
-	return results
+	return False
 
 
 mc.select(all=True)
@@ -103,6 +108,6 @@ cube1 = mc.polyCube(sx=1, sy=1, sz=1, h=5, w=5, d=5)
 cut_planes = form_cutting_planes_for_object(cube1[0], 4)
 random.shuffle(cut_planes)
 volume_ratios = [0.25, 0.5, 0.25]
-print cut_object_with_planes_and_ratios(cube1[0], cut_planes, volume_ratios)
+print cut_object_with_planes_and_ratios(cube1[0], cut_planes, volume_ratios, 0.05)
 
 
