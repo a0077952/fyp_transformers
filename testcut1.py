@@ -76,7 +76,6 @@ def cut_object_with_planes_and_ratios(obj, volume_total, planes, ratios, thresho
 			# for each parts
 			for j in range(len(parts) - 1):
 				this_volume_ratio = mm.eval('meshVolume(\"' + parts[j] + '\")') / volume_total
-				#print 'volume: ', this_volume_ratio
 				# check volume
 				first_unfound_volume = True
 				for k in range(len(ratios)):
@@ -123,10 +122,70 @@ def cut_object_with_planes_and_ratios(obj, volume_total, planes, ratios, thresho
 	if len(objs_to_cut) != 0:
 		bad_cut_objs.extend(objs_to_cut)
 	ratios_remaining = []
-	for f in ratio_found:
-		if f == 0:
-			ratios_remaining.append(ratios[f])
+	for i in range(len(ratio_found)):
+		if ratio_found[i] == 0:
+			ratios_remaining.append(ratios[i])
 	return {'bad_cut_objs': bad_cut_objs, 'ratios_remaining': ratios_remaining, 'good_cut_objs': results}
+
+# object should not contain more than one shell
+def rec(object_name, volume_total, cut_planes, volume_ratios, threshold, result, loop_num):
+	# base cases
+	if loop_num == 0:
+		print 'insert more coins to continue'
+		return False
+	elif mc.polyEvaluate(object_name, shell = True) > 1:
+		# more than one shell in object named 'object_name'
+		print 'NO REDEMPTION'
+		return False
+	elif len(volume_ratios) == 1:
+		# check ratio matches
+		this_ratio = mm.eval('meshVolume(\"' + object_name + '\")') / volume_total
+		# since its last one, might have more errors
+		if abs(this_ratio - volume_ratios[0]) < threshold * 4:
+			# duplicate the object
+			temp = mc.duplicate(object_name)
+			mc.select(temp[0], r = True)
+			# move away the duplication
+			mc.move(kMoveAwayXDistance, 0, 0, temp[0])
+			# remove the current object
+			mc.delete(object_name)
+			print 'DONE with last object!'
+			result.append(temp[0])
+			print result
+			return True
+		else:
+			print 'last object did NOT match last ratio!', this_ratio, volume_ratios[0]
+			return False
+
+	# recursive step
+	random.shuffle(cut_planes)
+	result_from_cutting = cut_object_with_planes_and_ratios(object_name, volume_total, cut_planes, volume_ratios, threshold)
+	if isinstance(result_from_cutting, list):
+		# this list contains all successfully cut objects and we are done
+		result.extend(result_from_cutting)
+		print 'lucky!'
+		print result
+		return True
+	else:
+		print 'Enter recursive step'
+		# dictionary returned
+		# extend result list with what we have now
+		result.extend(result_from_cutting['good_cut_objs'])
+		# merge the remaining objects into one
+		bad_cut_objs = result_from_cutting['bad_cut_objs']
+		if mc.polyEvaluate(bad_cut_objs, shell = True) > 1:
+			united_objects = mc.polyUnite(bad_cut_objs)[0]
+			mc.polyMergeVertex(united_objects)
+		else:
+			united_objects = bad_cut_objs[0]
+		# get list of ratios un-resolved
+		ratios_remaining = result_from_cutting['ratios_remaining']
+		recursion_result = rec(united_objects, volume_total, cut_planes, ratios_remaining, threshold, result, loop_num-1)
+		return recursion_result
+
+
+
+
 
 
 mc.select(all=True)
@@ -135,40 +194,10 @@ cube1 = mc.polyCube(sx=1, sy=1, sz=1, h=5, w=5, d=5)
 object_name = cube1[0]
 volume_total = mm.eval('meshVolume(\"' + object_name + '\")')
 volume_ratios = [0.25, 0.5, 0.25]
+threshold = 0.05
 #print mc.objectCenter(cube1[0])
 # LOOP A
 cut_planes = form_cutting_planes_for_object(object_name, 4)
 # LOOP B
-random.shuffle(cut_planes)
-# LOOP C
-result_from_cutting = cut_object_with_planes_and_ratios(object_name, volume_total, cut_planes, volume_ratios, 0.05)
-if isinstance(result_from_cutting, list):
-	# this list contains all successfully cut objects and we are done
-	print 'DONE!'
-else:
-	# dictionary returned
-	bad_cut_objs = result_from_cutting['bad_cut_objs']
-	ratios_remaining = result_from_cutting['ratios_remaining']
-	good_cut_objs = result_from_cutting['good_cut_objs']
-	# combine and merge all remaining parts
-	united_objects = mc.polyUnite(bad_cut_objs)[0]
-	mc.polyMergeVertex(united_objects)
-	if mc.polyEvaluate(united_objects, shell = True) > 1:
-		# remaining parts cannot be merged into one
-		print 'NO REDEMPTION'
-	else:
-		if len(ratios_remaining) == 1:
-			# only one ratio remains, must be what we need
-			temp = mc.duplicate(united_objects)
-			mc.select(temp[0], r = True)
-			# move away the duplication
-			mc.move(kMoveAwayXDistance, 0, 0, temp[0])
-			# remove the current object
-			mc.delete(united_objects)
-			print 'DONE with merge!'
-		else:
-			# LOOP D
-			print 'continue with LOOP D'
-	print 'FUCK!'
 
-
+rec(object_name, volume_total, cut_planes, volume_ratios, threshold, [], 10)
