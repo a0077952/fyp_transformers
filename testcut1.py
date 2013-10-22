@@ -194,10 +194,10 @@ cube1 = mc.polyCube(sx=1, sy=1, sz=1, h=5, w=5, d=5)
 object_name = cube1[0]
 volume_total = mm.eval('meshVolume(\"' + object_name + '\")')
 volume_ratios = [0.2, 0.4, 0.4]
-threshold = 0.05
+threshold = 0.03
 #print mc.objectCenter(cube1[0])
 # LOOP A
-cut_planes = form_cutting_planes_for_object(object_name, 4)
+cut_planes = form_cutting_planes_for_object(object_name, 10)
 # LOOP B
 
 rec(object_name, volume_total, cut_planes, volume_ratios, threshold, [], 10)
