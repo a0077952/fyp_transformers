@@ -193,7 +193,7 @@ mc.delete()
 cube1 = mc.polyCube(sx=1, sy=1, sz=1, h=5, w=5, d=5)
 object_name = cube1[0]
 volume_total = mm.eval('meshVolume(\"' + object_name + '\")')
-volume_ratios = [0.25, 0.5, 0.25]
+volume_ratios = [0.2, 0.4, 0.4]
 threshold = 0.05
 #print mc.objectCenter(cube1[0])
 # LOOP A
