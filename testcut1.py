@@ -2,10 +2,22 @@ import maya.cmds as mc
 import maya.mel as mm
 import random
 
-kMoveAwayXDistance = 20
+kMoveAwayXDistance = 10
 
 def form_cutting_planes_for_object(obj, num):
 	"num = number of separations in each direction, result in num - 1 planes"
+	def random_percentage():
+		"random a percentage from 90% - 110%"
+		a = random.randint(-10000, 10000)
+		a /= 100000.0
+		return 1 + a
+
+	def random_angle():
+		"random an angle to tilt, from 0 - 35 degrees"
+		a = random.randint(0, 35000)
+		a /= 1000.0
+		return a	
+
 	res = []
 	bbox = mc.exactWorldBoundingBox(obj)
 	xmin = bbox[0]
@@ -17,18 +29,21 @@ def form_cutting_planes_for_object(obj, num):
 	# yz planes 
 	for i in range(1, num):
 		x = xmin + i * ((xmax - xmin) / num)
+		x *= random_percentage()
 		# todo add randomness in rotation
-		p = {'pc': [x, 0, 0], 'ro': [0, 90, 0]}
+		p = {'pc': [x, 0, 0], 'ro': [random_angle(), 90, random_angle()]}
 		res.append(p)
 	# xz planes
 	for j in range(1, num):
 		y = ymin + j *((ymax - ymin) / num)
-		p = {'pc': [0, y, 0], 'ro': [90, 0, 0]}
+		y *= random_percentage()
+		p = {'pc': [0, y, 0], 'ro': [-90, random_angle(), random_angle()]}
 		res.append(p)
 	# xy planes
 	for k in range(1, num):
 		z = zmin + k * ((zmax - zmin) / num)
-		p = {'pc': [0, 0, z], 'ro': [0, 0, 0]}
+		z *= random_percentage()
+		p = {'pc': [0, 0, z], 'ro': [random_angle(), random_angle(), 0]}
 		res.append(p)
 	return res
 
@@ -184,6 +199,12 @@ def rec(object_name, volume_total, cut_planes, volume_ratios, threshold, result,
 		return recursion_result
 
 
+def print_cut_planes(planes):
+	for p in planes:
+		temp = mc.polyPlane(ax = [0, 0, 1], h = 5, w = 5)
+		mc.move(p['pc'][0], p['pc'][1], p['pc'][2], temp)
+		mc.rotate(p['ro'][0], p['ro'][1], p['ro'][2], temp)
+	return
 
 
 
@@ -198,6 +219,10 @@ threshold = 0.03
 #print mc.objectCenter(cube1[0])
 # LOOP A
 cut_planes = form_cutting_planes_for_object(object_name, 10)
-# LOOP B
+#print_cut_planes(cut_planes)
+#mc.delete(object_name)
+
+
+
 
 rec(object_name, volume_total, cut_planes, volume_ratios, threshold, [], 10)
