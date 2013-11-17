@@ -212,17 +212,18 @@ def print_cut_planes(planes):
 mc.select(all=True)
 mc.delete()
 cube1 = mc.polyCube(sx=1, sy=1, sz=1, h=5, w=5, d=5)
+#cube1 = mc.polySphere(r=5, sx=20, sy=20, ax=[0,1,0])
+#cube1 = mc.polyCylinder(r=3, h=5, sx=20, sy=1, ax=[0,1,0])
+#cube1 = mc.polyCone(r=1, h=2, ax=[0,1,0])
+#cube1 = mc.polyPyramid()
 object_name = cube1[0]
 volume_total = mm.eval('meshVolume(\"' + object_name + '\")')
 volume_ratios = [0.2, 0.4, 0.4]
 threshold = 0.03
 #print mc.objectCenter(cube1[0])
 # LOOP A
-cut_planes = form_cutting_planes_for_object(object_name, 10)
+cut_planes = form_cutting_planes_for_object(object_name, 4)
 #print_cut_planes(cut_planes)
 #mc.delete(object_name)
 
-
-
-
-rec(object_name, volume_total, cut_planes, volume_ratios, threshold, [], 10)
+rec(object_name, volume_total, cut_planes, volume_ratios, threshold, [], 1)
