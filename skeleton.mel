@@ -1,0 +1,29 @@
+// create joints
+joint -p 0 -1.972477 1.954128 ;
+joint -p 0 -5.238532 1.348624 ;
+joint -e -zso -oj xyz -sao yup joint1;
+joint -p 0 -8.431193 1.293578 ;
+joint -e -zso -oj xyz -sao yup joint2;
+
+// rename
+rename |joint1 "hip";
+// Result: hip // 
+rename |hip|joint2 "thigh";
+// Result: thigh // 
+rename |hip|thigh|joint3 "calf";
+
+// select move
+select -r thigh ;
+move -r -1.284404 0.165138 0 ;
+select -r calf ;
+move -r 1.33945 -0.220183 0 
+
+// mirror joint
+mirrorJoint -mirrorYZ -mirrorBehavior -searchReplace "left" "right";
+// Result: right_hip right_thigh right_calf // 
+
+// set parent
+parent left_hip backroot;
+// Result: left_hip // 
+parent right_hip backroot;
+// Result: right_hip // 
