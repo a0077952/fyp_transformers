@@ -74,9 +74,9 @@ def rec(remaining, part, move):
 		vol_part = volume(cutpart)
 		bbox_cut = cmds.exactWorldBoundingBox(cutpart)
 
-		# percentage inside check
+		# percentage outside check
 		pi = vertices_outside(bbox_rem, bbox_cut)
-		if pi < 5:
+		if pi <= 6:
 			cmds.delete(cutpart)
 			continue
 
@@ -86,7 +86,7 @@ def rec(remaining, part, move):
 		new_cut = cmds.polyBoolOp(dum_rem, dum_cut, op=3)[0]
 		new_rem = cmds.polyBoolOp(remaining, cutpart, op=2)[0]
 		vol_cut = volume(new_cut)
-		if vol_cut / vol_part > 0.6:
+		if vol_cut / vol_part > 0.5:
 			# this part might work
 			result = rec(new_rem, part[1:], move + 3)
 			if result == True:
