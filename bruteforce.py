@@ -63,9 +63,8 @@ def center_with_sub_index(bbox, xp, yp, zp):
 def rec(remaining, part, move):
 	print 'enter step', (move-5)/3
 
-	# last part
-	if len(part) == 1: 
-		print 'done'
+	if len(part) == 0: 
+		print 'done', remaining
 		return True
 
 	backup_rem = cmds.duplicate(remaining)
@@ -74,10 +73,11 @@ def rec(remaining, part, move):
 	# for all possible centers
 	# center must be inside the bounding box
 	# here we consider centers lies on one subdivision of axis
-	nn = 10
+	nn = 20
 	xsub = nn
 	ysub = nn
 	zsub = nn
+	sum = 0
 	for x in xrange(xsub):
 		for y in xrange(ysub):
 			for z in xrange(zsub):
@@ -93,10 +93,8 @@ def rec(remaining, part, move):
 				vol_part = volume_with_bbox(bbox_cut)
 
 				# percentage of vertex outside check
-				# todo area check add here
 				pi = vertices_outside(bbox_rem, bbox_cut)
-				if pi <= 8:
-					#print 'fail fuck'
+				if pi < 6:
 					cmds.delete(cutpart)
 					continue
 
@@ -105,28 +103,35 @@ def rec(remaining, part, move):
 				dum_cut = cmds.duplicate(cutpart)
 				new_cut = cmds.polyBoolOp(dum_rem, dum_cut, op=3)[0]
 				new_rem = cmds.polyBoolOp(remaining, cutpart, op=2)[0]
-				vol_cut = volume(new_cut)
+
+				# shell check
+				# make sure that new_cut contains one single object
+				if cmds.polyEvaluate(new_cut, shell = True) != 1:
+					cmds.delete(new_rem)
+					cmds.delete(new_cut)
+					remaining = cmds.duplicate(backup_rem)
+					continue
 
 				# volume check
-				if vol_cut / vol_part > 0.6:
+				vol_cut = volume(new_cut)
+				if vol_cut / vol_part  > 0.4:
 					# this part might work
 					result = rec(new_rem, part[1:], move + 3)
 					if result == True:
-						print 'sol found, return to upper lv'
+						sum = sum + 1
+						print 'sol found, return to upper lv', vol_cut, vol_part
 						cmds.move(move, 0, 0, new_cut, r=1)
 						cmds.delete(backup_rem)
 						return True
 				else:
-					# volume too small, discard this center
-					cmds.delete(new_rem)
-				
-				# reverse cut		
-				cmds.delete(new_cut)
-				remaining = cmds.duplicate(backup_rem)
+					print vol_cut / vol_part 
 
-	
+					cmds.delete(new_rem)
+					cmds.delete(new_cut)
+					remaining = cmds.duplicate(backup_rem)
+			
 	# no solusion after tried all
-	print 'fail in step', (move-5)/3
+	print 'fail in step', (move-5)/3, 'try', sum
 	cmds.delete(backup_rem)
 	cmds.delete(remaining)
 	return False
@@ -136,13 +141,10 @@ def rec(remaining, part, move):
 cmds.select(all=True)
 cmds.delete()
 
-remaining = cmds.polyCube(h=3, w=3, d=3)[0]
-part0 = [1, 3, 3]
-part1 = [2, 3, 3]
-part = [part0, part1]
+remaining = cmds.polyCube(h=5, w=5, d=5)[0]
+part0 = [1, 1, 1]
+part = [part0, part0, part0, part0, part0, part0, part0, part0, part0]
 rec(remaining, part, 5)
-
-
 
 
 
