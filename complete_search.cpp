@@ -108,7 +108,7 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 					int done = rec(found, bin);
 					if (done) { 
 						// print result
-						printf("pivot %d %d %d, shape %d %d %d\n", px, py, pz, x, y, z);
+						printf("%f %f %f %f %f %f\n", px/(float)binx, py/(float)biny, pz/(float)binz, x/(float)binx, y/(float)biny, z/(float)binz);
 						return 1;
 					}
 
@@ -129,7 +129,7 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 int main()
 {
 	freopen("in", "r", stdin);
-	//freopen("out", "w", stdout);
+	freopen("out", "w", stdout);
 
 	// read in
 	scanf("%d %d %d", &binx, &biny, &binz);
@@ -145,7 +145,7 @@ int main()
 	int found[MAX_PART_NUM];
 
 	//cout << size_of_unfound(found) << endl;
-	cout<<rec(found, bin);
+	rec(found, bin);
 
 }
 
