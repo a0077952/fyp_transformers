@@ -108,7 +108,8 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 					int done = rec(found, bin);
 					if (done) { 
 						// print result
-						printf("%f %f %f %f %f %f\n", px/(float)binx, py/(float)biny, pz/(float)binz, x/(float)binx, y/(float)biny, z/(float)binz);
+						//printf("%f %f %f %f %f %f\n", px/(float)binx, py/(float)biny, pz/(float)binz, x/(float)binx, y/(float)biny, z/(float)binz);
+						printf("%d %d %d %d %d %d\n", px, py, pz, x, y, z);
 						return 1;
 					}
 
@@ -126,8 +127,11 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 	return 0;
 }
 
-int main()
-{
+void botup() {
+	// all permutations
+}
+
+int main() {
 	freopen("in", "r", stdin);
 	freopen("out", "w", stdout);
 
