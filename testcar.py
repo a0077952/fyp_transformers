@@ -26,12 +26,12 @@ def create_part_by_shape(obj, shape, pivot):
 	part = cmds.polyCube(h=oh, w=ow, d=od)[0]
 
 	px, py, pz = percet2loc(obj, pivot)
-	move_lower_left_back_corner_to(part, [px, py, pz])
+	move_lower_left_back_corner_to(part, [px, py+0.1, pz])
 	return part
 
 def cut_by_part(obj, part):
 	dup_obj = cmds.duplicate(obj)[0]
-	new_cut = cmds.polyBoolOp(dup_obj, part, op=3)[0]
+	new_cut = cmds.polyBoolOp(dup_obj, part, op=3, useThresholds=1, preserveColor=1)[0]
 	return new_cut
 
 def create_joints_and_bind(obj, joints):
@@ -48,11 +48,11 @@ def create_joints_and_bind(obj, joints):
 
 
 #####################################################################################
-cmds.select(all=True)
-cmds.delete()
+#cmds.select(all=True)
+#cmds.delete()
 
 # init
-rem = cmds.polyCube(w = 3, h = 6, d = 2)[0]
+rem = 'transform47'
 # map from part id to the mesh
 partdict = dict()
 # joint info contains 4 3-tuples, parent pos, child pos, parent translation, parent rotation
@@ -64,7 +64,7 @@ pivots = []
 num_parts = 0
 
 # read all input
-with open('D:\\FYP\\fyp_transformers\\out', 'r') as f:
+with open('D:\\FYP\\fyp_transformers\\template_brick', 'r') as f:
 	fin = f.readlines()
 # number of parts
 num_parts = int(fin[0])
@@ -90,30 +90,30 @@ for i in xrange(num_parts):
 # delete original object
 cmds.delete(rem)
 
-# ###################
-# # read each joint info
-# for i in xrange(num_parts + 1, 2*num_parts + 1):
-# 	line = fin[i].split()
-# 	jointid = line[0]
-# 	jointinfodict[jointid] = [[float(line[1]), float(line[2]), float(line[3])], [float(line[4]), float(line[5]), float(line[6])], \
-# 								[float(line[7]), float(line[8]), float(line[9])], [float(line[10]), float(line[11]), float(line[12])]]
+###################
+# read each joint info
+for i in xrange(num_parts + 1, 2*num_parts + 1):
+	line = fin[i].split()
+	jointid = line[0]
+	jointinfodict[jointid] = [[float(line[1]), float(line[2]), float(line[3])], [float(line[4]), float(line[5]), float(line[6])], \
+								[float(line[7]), float(line[8]), float(line[9])], [float(line[10]), float(line[11]), float(line[12])]]
 
-# # create joints and bind skin
-# for p in partid:
-# 	parent, child = create_joints_and_bind(partdict[p], jointinfodict[p])
-# 	jointdict[p] = [parent, child]
+# create joints and bind skin
+for p in partid:
+	parent, child = create_joints_and_bind(partdict[p], jointinfodict[p])
+	jointdict[p] = [parent, child]
 
-# ###################
-# # read parent info
-# for i in xrange(2*num_parts + 1, len(fin)):
-# 	line = fin[i].split()
-# 	p1, j1, p2, j2 = line[0], line[1], line[2], line[3]
-# 	cmds.parent(jointdict[p2][int(j2)], jointdict[p1][int(j1)])
+###################
+# read parent info
+for i in xrange(2*num_parts + 1, len(fin)):
+	line = fin[i].split()
+	p1, j1, p2, j2 = line[0], line[1], line[2], line[3]
+	cmds.parent(jointdict[p2][int(j2)], jointdict[p1][int(j1)])
 
-# ##################
-# # move and rotate each part
-# for p in partid:
-# 	x, y, z = jointinfodict[p][2]
-# 	rx, ry, rz = jointinfodict[p][3]
-# 	cmds.move(x, y, z, jointdict[p][0], r=1)
-# 	cmds.rotate(rx, ry, rz, jointdict[p][0], r=1, os=1)
+##################
+# move and rotate each part
+for p in partid:
+	x, y, z = jointinfodict[p][2]
+	rx, ry, rz = jointinfodict[p][3]
+	cmds.move(x, y, z, jointdict[p][0], r=1)
+	cmds.rotate(rx, ry, rz, jointdict[p][0], r=1, os=1)

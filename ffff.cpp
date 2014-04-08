@@ -7,8 +7,7 @@
 
 using namespace std;
 
-#define MAX_BINXYZ 50
-#define MAX_PART_NUM 10
+#define MAX_BINXYZ 70
 
 typedef pair<int, pair<int, int> > iii;
 #define iii(a, b, c) make_pair(a, make_pair(b, c))
@@ -93,6 +92,7 @@ vector<Part> partlist;
 int bin[MAX_BINXYZ][MAX_BINXYZ][MAX_BINXYZ];
 vector<iii> pivotlist;
 int res_count = 0;
+int try_c = 0;
 
 iii get_pivot(int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 	for (int i = 0; i < binx; i++)
@@ -196,10 +196,14 @@ int checkfit(vector<int> perm, string orient) {
 // get orientation combinations for a permutation of parts
 void comb(int index, vector<int> perm, string res){
 	if (index == perm.size()) {
-		if (checkfit(perm, res)) {
-			res_count ++;
-			//cout << "done" <<endl;
-		}
+		//cout << "checking " << try_c << endl;
+		try_c ++;
+		//if (checkfit(perm, res)) {
+			//res_count ++;
+			//cout << "res_count" <<endl;
+			//printbin(bin);
+			
+		//}
 		return;
 	}
 
@@ -242,13 +246,14 @@ void readin() {
 }
 
 int main() {
-	freopen("in", "r", stdin);
-	freopen("out", "w", stdout);
+	freopen("in3", "r", stdin);
+	//freopen("out", "w", stdout);
 
 	readin();
 	botup();
 
 	cout << res_count <<endl;
+	cout << try_c <<endl;
 
 }
 

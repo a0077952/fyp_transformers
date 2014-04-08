@@ -1,10 +1,16 @@
 #include <iostream>
 #include <cstdio>
+#include <stack>
 
 using namespace std;
 
-#define MAX_BINXYZ 50
-#define MAX_PART_NUM 20
+#define MAX_BINXYZ 70
+#define MAX_PART_NUM 10
+
+typedef pair<int, pair<int, int> > iii;
+typedef pair<iii, iii> i6;
+#define iii(a, b, c) make_pair(a, make_pair(b, c))
+#define i6(a, b, c, d, e, f) make_pair(iii(a, b, c), iii(d, e, f))
 
 struct Part{
 	int w, h, d;
@@ -17,6 +23,7 @@ struct Part{
 int binx, biny, binz;
 int num_parts;
 Part parts[MAX_PART_NUM];
+stack<i6> tstack;
 
 void orient(int orientation, Part p, int &x, int &y, int &z) {
 	switch (orientation) {
@@ -105,14 +112,34 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 					found[i] = 1;
 					//cout << "trying part " << i <<endl;
 					// rec
+					tstack.push(i6(px, py, pz, x, y, z));
 					int done = rec(found, bin);
 					if (done) { 
 						// print result
 						//printf("%f %f %f %f %f %f\n", px/(float)binx, py/(float)biny, pz/(float)binz, x/(float)binx, y/(float)biny, z/(float)binz);
-						printf("%d %d %d %d %d %d\n", px, py, pz, x, y, z);
-						return 1;
+						//printf("%d %d %d %d %d %d\n", px, py, pz, x, y, z);
+						//return 1;
+						printf("haha caught one!\n");
+						stack<i6> temp;
+						while(!tstack.empty()) {
+					        temp.push(tstack.top());
+					        tstack.pop();
+					    }
+
+					    while(!temp.empty()) {
+					    	i6 item = temp.top();
+					        tstack.push(item);
+					    	printf("%d %d %d %d %d %d\n", item.first.first, item.first.second.first, item.first.second.second, item.second.first, item.second.second.first, item.second.second.second);
+					        temp.pop();
+					    }
+					    int j=0;
+					    for (int i=0; i< 200; i++)
+					    	j++;
+					    cout <<endl;
+
 					}
 
+					tstack.pop();
 					// backtrack
 					for (int i = px; i < px + x; i++)
 						for (int j = py; j < py + y; j++)
@@ -132,8 +159,8 @@ void botup() {
 }
 
 int main() {
-	freopen("in", "r", stdin);
-	freopen("out", "w", stdout);
+	freopen("in4", "r", stdin);
+	//freopen("out", "w", stdout);
 
 	// read in
 	scanf("%d %d %d", &binx, &biny, &binz);
