@@ -198,12 +198,12 @@ void comb(int index, vector<int> perm, string res){
 	if (index == perm.size()) {
 		//cout << "checking " << try_c << endl;
 		try_c ++;
-		//if (checkfit(perm, res)) {
-			//res_count ++;
+		if (checkfit(perm, res)) {
+			res_count ++;
 			//cout << "res_count" <<endl;
 			//printbin(bin);
 			
-		//}
+		}
 		return;
 	}
 
@@ -246,7 +246,7 @@ void readin() {
 }
 
 int main() {
-	freopen("in3", "r", stdin);
+	freopen("in", "r", stdin);
 	//freopen("out", "w", stdout);
 
 	readin();

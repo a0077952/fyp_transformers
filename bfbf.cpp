@@ -4,20 +4,59 @@
 #include <map>
 #include <vector>
 #include <string.h>
+#include <set>
 
 using namespace std;
 
 #define MAX_BINXYZ 70
 #define MAX_PART_NUM 10
 #define MAX_ID_LEN 10
+typedef pair<int, pair<int, int> > iii;
+#define iii(a, b, c) make_pair(a, make_pair(b, c))
 
 struct Part{
 	char id[MAX_ID_LEN];
 	int w, h, d;
+	vector<int> orient;
+
 	Part() {};
 	Part(char *s, int a, int b, int c) {
 		strcpy(id, s); w = a; h = b; d = c;
+
+		set<iii> orientset;
+		for (int j = 0; j < 6; j++) {
+			iii o = get_orient(j);
+			if (orientset.find(o) == orientset.end()) {
+				orient.push_back(j);
+				orientset.insert(o);
+			}
+		}
 	}
+
+	iii get_orient(int o) {
+		int x, y, z;
+		switch (o) {
+			case 0:
+				x = w; y = h; z = d;
+				break;
+			case 1:
+				x = w; y = d; z = h;
+				break;
+			case 2:
+				x = h; y = w; z = d;
+				break;
+			case 3:
+				x = h; y = d; z = w;
+				break;
+			case 4:
+				x = d; y = w; z = h;
+				break;
+			case 5:
+				x = d; y = h; z = w;
+				break;
+		}
+		return iii(x, y, z);
+	}    
 };
 
 struct Result {
@@ -26,10 +65,6 @@ struct Result {
 	Result() {};
 	Result(char *s, int a, int b, int c, int d, int e, int f) {
 		strcpy(id, s); px = a; py = b; pz = c; x = d, y = e; z = f;
-	}
-
-	Result(int a, int b, int c, int d, int e, int f) {
-		px = a; py = b; pz = c; x = d, y = e; z = f;
 	}
 };
 
@@ -133,7 +168,7 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 			while(!tstack.empty()) {
 				Result r = tstack.top();
 			    resstack.push(r);
-			    resmap[r.id] = r;
+			    resmap[r.id] = r;	
 			    tstack.pop();
 			}
 			while(!resstack.empty()) {
@@ -143,9 +178,9 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 
 			// check if satisfy link info
 			int sat = 1;
-			for (auto info : linkinfo) {
-				Result a = resmap[info.first];
-				vector<string> v = info.second;
+			for (auto li : linkinfo) {
+				Result a = resmap[li.first];
+				vector<string> v = li.second;
 				for (auto p : v) {
 					Result b = resmap[p];
 					if (!is_next_to(a, b)) {
@@ -158,10 +193,10 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 			if (sat) {
 				// print result
 				res_count++;
-				if (res_count != RESINDEX)
-					return 0;
+				// if (res_count != RESINDEX)
+				// 	return 0;
 
-				cout << num_parts << endl;
+				cout << num_parts <<" 0" << endl;
 				for (auto k : resmap) {
 					Result item = k.second;
 					printf("%s %f %f %f %f %f %f\n", item.id, item.px/(float)binx, item.py/(float)biny, item.pz/(float)binz, item.x/(float)binx, item.y/(float)biny, item.z/(float)binz);
@@ -185,9 +220,9 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 	for (int i = 0; i < num_parts; i++) {
 		if (!found[i]) {
 			// for all orientations
-			for (int j = 0; j < 6; j++) {
+			for (auto orientIndex : parts[i].orient) {
 				int x, y, z;
-				orient(j, parts[i], x, y, z);
+				orient(orientIndex, parts[i], x, y, z);
 				if (can_fit(bin, px, py, pz, x, y, z)) {
 					// fit in 
 					for (int i = px; i < px + x; i++)
@@ -200,8 +235,8 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 					tstack.push(Result(parts[i].id, px, py, pz, x, y, z));
 					int done = rec(found, bin);
 					if (done) { 
-						if (res_count == RESINDEX)
-							return 1;
+						// if (res_count == RESINDEX)
+						// 	return 1;
 					}
 
 					tstack.pop();
@@ -220,7 +255,7 @@ int rec(int found[], int bin[][MAX_BINXYZ][MAX_BINXYZ]) {
 }
 
 int main() {
-	freopen("in5", "r", stdin);
+	freopen("in4", "r", stdin);
 	//freopen("out", "w", stdout);
 
 	// read in
@@ -257,6 +292,6 @@ int main() {
 	//cout << size_of_unfound(found) << endl;
 	rec(found, bin);
 
-	// cout << res_count << endl;
+	cout << res_count << endl;
 }
 

@@ -1,5 +1,5 @@
 30 60 20
-8 1
+8 4
 head 18 15 20
 lshdr 6 15 20
 larm 5 25 20
@@ -10,3 +10,9 @@ rarm 5 25 20
 rshdr 6 15 20
 torso 7
 head lshdr rshdr larm rarm lleg rleg
+head 2
+lshdr rshdr
+larm 2
+lshdr lleg
+rarm 2
+rshdr rleg
